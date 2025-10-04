@@ -23,8 +23,8 @@ public class FarmField {
     private FieldGrid grid;
     private SubdivisionConfig subdivisionConfig;
     private CropConfig cropConfig;
-    private FieldTileMap tileMap;
-    private StorageConfig storageConfig;
+    private transient FieldTileMap tileMap; // Don't serialize - causes circular reference
+    private transient StorageConfig storageConfig; // Don't serialize - stored separately in FarmingManager
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;

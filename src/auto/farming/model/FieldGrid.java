@@ -253,6 +253,16 @@ public class FieldGrid {
     }
     
     /**
+     * @return The radius for circular fields, or 0 for non-circular fields
+     */
+    public double getRadius() {
+        if (shape == FieldShape.CIRCLE) {
+            return dimensions.x;
+        }
+        return 0.0;
+    }
+    
+    /**
      * Sets the origin point.
      * 
      * @param origin New origin point

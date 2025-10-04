@@ -25,7 +25,7 @@ public class FarmingTestUtils {
         // Set grid boundaries (10x10 tiles)
         Coord2d min = new Coord2d(centerX - 5, centerY - 5);
         Coord2d max = new Coord2d(centerX + 5, centerY + 5);
-        FieldGrid grid = FieldGrid.rectangle(min, max);
+        FieldGrid grid = FieldGrid.rectangle(min.x, min.y, max.x, max.y);
         field.setGrid(grid);
         field.setGridOrigin(min);
         
@@ -52,7 +52,7 @@ public class FarmingTestUtils {
         FarmField field = new FarmField(name, FieldType.QUALITY, FieldShape.CIRCLE);
         
         Coord2d center = new Coord2d(centerX, centerY);
-        FieldGrid grid = FieldGrid.circle(center, radius);
+        FieldGrid grid = FieldGrid.circle(centerX, centerY, radius);
         field.setGrid(grid);
         field.setGridOrigin(center);
         

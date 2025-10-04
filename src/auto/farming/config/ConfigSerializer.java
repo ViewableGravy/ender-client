@@ -82,11 +82,11 @@ public class ConfigSerializer {
                 JsonArray boundsArray = obj.getAsJsonArray("bounds");
                 Coord2d min = new Coord2d(boundsArray.get(0).getAsDouble(), boundsArray.get(1).getAsDouble());
                 Coord2d max = new Coord2d(boundsArray.get(2).getAsDouble(), boundsArray.get(3).getAsDouble());
-                return FieldGrid.rectangle(min, max);
+                return FieldGrid.rectangle(min.x, min.y, max.x, max.y);
             } else if (shape == FieldShape.CIRCLE) {
                 Coord2d center = context.deserialize(obj.get("center"), Coord2d.class);
                 double radius = obj.get("radius").getAsDouble();
-                return FieldGrid.circle(center, radius);
+                return FieldGrid.circle(center.x, center.y, radius);
             }
             
             throw new JsonParseException("Unknown field shape: " + shape);

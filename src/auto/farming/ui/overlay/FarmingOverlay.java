@@ -111,20 +111,44 @@ public class FarmingOverlay {
     private void renderRectangleField(GOut g, MapView mapView, FieldGrid grid, Color color, FarmField field) {
         double[] bounds = grid.getBounds();
         
-        // Convert grid coordinates to screen coordinates
-        Coord2d minWorld = new Coord2d(bounds[0] * MCache.tilesz.x, bounds[1] * MCache.tilesz.y);
-        Coord2d maxWorld = new Coord2d(bounds[2] * MCache.tilesz.x, bounds[3] * MCache.tilesz.y);
+        // Convert grid coordinates to world coordinates
+        // Grid coords are in tiles (1 tile = 11 world units)
+        double minX = bounds[0] * 11.0;
+        double minY = bounds[1] * 11.0;
+        double maxX = bounds[2] * 11.0;
+        double maxY = bounds[3] * 11.0;
         
-        Coord minScreen = mapView.screenxf(minWorld).round();
-        Coord maxScreen = mapView.screenxf(maxWorld).round();
+        // Get all 4 corners in world space
+        Coord2d topLeft = new Coord2d(minX, minY);
+        Coord2d topRight = new Coord2d(maxX, minY);
+        Coord2d bottomLeft = new Coord2d(minX, maxY);
+        Coord2d bottomRight = new Coord2d(maxX, maxY);
         
-        // Draw rectangle
+        // Convert all corners to screen space
+        Coord3f tlScreen = mapView.screenxf(topLeft);
+        Coord3f trScreen = mapView.screenxf(topRight);
+        Coord3f blScreen = mapView.screenxf(bottomLeft);
+        Coord3f brScreen = mapView.screenxf(bottomRight);
+        
+        if (tlScreen == null || trScreen == null || blScreen == null || brScreen == null) {
+            return; // Map not loaded yet
+        }
+        
+        Coord tl = tlScreen.round2();
+        Coord tr = trScreen.round2();
+        Coord bl = blScreen.round2();
+        Coord br = brScreen.round2();
+        
+        // Draw rectangle as 4 lines connecting the corners
         g.chcolor(color);
-        g.rect(minScreen, maxScreen.sub(minScreen));
+        g.line(tl, tr, 2); // Top edge
+        g.line(tr, br, 2); // Right edge
+        g.line(br, bl, 2); // Bottom edge
+        g.line(bl, tl, 2); // Left edge
         
-        // Draw field name
+        // Draw field name at center
         g.chcolor(Color.WHITE);
-        Coord center = minScreen.add(maxScreen.sub(minScreen).div(2));
+        Coord center = tl.add(br.sub(tl).div(2));
         g.atext(field.getName(), center, 0.5, 0.5);
         
         g.chcolor();
@@ -138,18 +162,29 @@ public class FarmingOverlay {
         double radius = grid.getRadius();
         
         // Convert to world coordinates
-        Coord2d centerWorld = new Coord2d(centerGrid.x * MCache.tilesz.x, centerGrid.y * MCache.tilesz.y);
-        Coord centerScreen = mapView.screenxf(centerWorld).round();
+        Coord2d centerWorld = new Coord2d(centerGrid.x * 11.0, centerGrid.y * 11.0);
+        Coord3f centerScreen3f = mapView.screenxf(centerWorld);
         
-        // Calculate screen radius (approximate)
-        Coord2d radiusPoint = new Coord2d(centerGrid.x + radius, centerGrid.y);
-        Coord2d radiusWorld = new Coord2d(radiusPoint.x * MCache.tilesz.x, radiusPoint.y * MCache.tilesz.y);
-        Coord radiusScreen = mapView.screenxf(radiusWorld).round();
+        if (centerScreen3f == null) {
+            return; // Map not loaded yet
+        }
+        
+        Coord centerScreen = centerScreen3f.round2();
+        
+        // Calculate screen radius (approximate - use distance from center to edge point)
+        Coord2d radiusPoint = new Coord2d((centerGrid.x + radius) * 11.0, centerGrid.y * 11.0);
+        Coord3f radiusScreen3f = mapView.screenxf(radiusPoint);
+        
+        if (radiusScreen3f == null) {
+            return;
+        }
+        
+        Coord radiusScreen = radiusScreen3f.round2();
         int screenRadius = radiusScreen.sub(centerScreen).x;
         
         // Draw circle
         g.chcolor(color);
-        g.fellipse(centerScreen, new Coord(screenRadius, screenRadius));
+        g.fellipse(centerScreen, new Coord(Math.abs(screenRadius), Math.abs(screenRadius)));
         
         // Draw field name
         g.chcolor(Color.WHITE);
