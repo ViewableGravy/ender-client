@@ -2328,15 +2328,41 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
         // Farming bot test commands
         cmdmap.put("farmtest", new Console.Command() {
             public void run(Console cons, String[] args) {
-                if (args.length < 3) {
-                    cons.out.println("Usage: farmtest <gridX> <gridY> [name]");
-                    cons.out.println("Creates a rectangular test field at the specified grid coordinates");
-                    return;
-                }
                 try {
-                    double gridX = Double.parseDouble(args[1]);
-                    double gridY = Double.parseDouble(args[2]);
-                    String name = args.length > 3 ? args[3] : "Test Field";
+                    double gridX, gridY;
+                    String name;
+                    
+                    if (args.length < 2) {
+                        // Use player position as default
+                        if (map != null && map.player() != null) {
+                            Coord2d playerPos = map.player().rc;
+                            gridX = Math.floor(playerPos.x / 11.0);
+                            gridY = Math.floor(playerPos.y / 11.0);
+                            name = "Test Field";
+                            cons.out.println("Using player position: grid (" + gridX + ", " + gridY + ")");
+                        } else {
+                            cons.out.println("Usage: farmtest [gridX] [gridY] [name]");
+                            cons.out.println("Creates a 20x20 rectangular test field");
+                            cons.out.println("If no coordinates provided, uses player position");
+                            return;
+                        }
+                    } else if (args.length == 2) {
+                        // Legacy: single argument assumed to be name at player position
+                        if (map != null && map.player() != null) {
+                            Coord2d playerPos = map.player().rc;
+                            gridX = Math.floor(playerPos.x / 11.0);
+                            gridY = Math.floor(playerPos.y / 11.0);
+                            name = args[1];
+                        } else {
+                            cons.out.println("Error: Player position not available");
+                            return;
+                        }
+                    } else {
+                        gridX = Double.parseDouble(args[1]);
+                        gridY = Double.parseDouble(args[2]);
+                        name = args.length > 3 ? args[3] : "Test Field";
+                    }
+                    
                     auto.farming.util.FarmingTestUtils.createTestField(gridX, gridY, name);
                     cons.out.println("Created test field '" + name + "' at grid (" + gridX + ", " + gridY + ")");
                 } catch (NumberFormatException e) {
@@ -2370,6 +2396,46 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
                 int count = auto.farming.FarmingManager.getInstance().getAllFields().size();
                 auto.farming.FarmingManager.getInstance().getAllFields().clear();
                 cons.out.println("Cleared " + count + " test field(s)");
+            }
+        });
+        
+        cmdmap.put("farmoverlay", new Console.Command() {
+            public void run(Console cons, String[] args) {
+                if (args.length < 2) {
+                    cons.out.println("Usage: farmoverlay <command>");
+                    cons.out.println("Commands:");
+                    cons.out.println("  toggle         - Toggle overlay on/off");
+                    cons.out.println("  tilestates     - Toggle tile state visualization");
+                    cons.out.println("  botactivity    - Toggle bot activity indicators");
+                    cons.out.println("  performance    - Toggle performance metrics");
+                    return;
+                }
+                
+                auto.farming.ui.overlay.FarmingOverlay overlay = auto.farming.ui.overlay.FarmingOverlay.getInstance();
+                String cmd = args[1].toLowerCase();
+                
+                switch (cmd) {
+                    case "toggle":
+                        overlay.toggle();
+                        cons.out.println("Farming overlay: " + (overlay.isEnabled() ? "ON" : "OFF"));
+                        break;
+                    case "tilestates":
+                        overlay.toggleTileStates();
+                        cons.out.println("Tile state visualization: " + (overlay.isShowingTileStates() ? "ON" : "OFF"));
+                        break;
+                    case "botactivity":
+                        overlay.toggleBotActivity();
+                        cons.out.println("Bot activity indicators: " + (overlay.isShowingBotActivity() ? "ON" : "OFF"));
+                        break;
+                    case "performance":
+                        overlay.togglePerformanceMetrics();
+                        cons.out.println("Performance metrics: " + (overlay.isShowingPerformanceMetrics() ? "ON" : "OFF"));
+                        break;
+                    default:
+                        cons.out.println("Unknown command: " + cmd);
+                        cons.out.println("Use 'farmoverlay' to see available commands");
+                        break;
+                }
             }
         });
     }

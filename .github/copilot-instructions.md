@@ -186,6 +186,25 @@ The **xTended menu** (`paginae/add/*`) is a critical custom feature system provi
 4. **Merge upstream changes**: Regularly merge from "loftar's" base client (see changelog)
 5. **Clean builds**: If encountering unexplained issues, try `ant clean` then `ant`
 
+### Feature Development & Story Tracking
+
+**Story Completion Pattern**:
+- User stories are tracked in `feature/farming-bot/epic*/` directories as markdown files
+- When a story is **completed**, rename the file from `.md` to `.done.md` (e.g., `2.3-implement-field-boundary-rendering.md` → `2.3-implement-field-boundary-rendering.done.md`)
+- The `.done.md` suffix indicates the story meets all acceptance criteria and definition of done
+- This pattern allows filtering completed vs. in-progress stories easily
+
+**Story File Naming Convention**:
+- Format: `<epic>.<story>-<description>.md` (e.g., `2.3-implement-field-boundary-rendering.md`)
+- Completed: `<epic>.<story>-<description>.done.md`
+- Stories contain: Story ID, Epic, Story Points, Priority, Status, Description, Acceptance Criteria, Technical Notes, Definition of Done
+
+**Branch Strategy** (from feature/farming-bot directory):
+- `feature/farming-bot`: Main feature branch
+- `feature/farming-bot-epic<N>`: Epic-specific branches (e.g., `feature/farming-bot-epic1`, `feature/farming-bot-epic2`)
+- Epic branches are merged to main feature branch when complete but **NOT deleted** (preserved for reference)
+- See `BRANCHING-STRATEGY.md` for details
+
 ## External Dependencies
 
 **Libraries** (auto-downloaded):

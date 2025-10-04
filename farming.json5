@@ -24,6 +24,28 @@
       "createdAt": 1759559853464
     },
     {
+      "id": "66aa64c7-2bb6-4943-abfa-4105d518b6ba",
+      "name": "Test Field",
+      "type": "QUANTITY",
+      "shape": "RECTANGLE",
+      "grid": {
+        "shape": "RECTANGLE",
+        "bounds": [
+          -920.0,
+          -924.0,
+          -910.0,
+          -914.0
+        ]
+      },
+      "gridOrigin": {
+        "x": -920.0,
+        "y": -924.0
+      },
+      "cropType": "gfx/terobjs/plants/wheat",
+      "enabled": true,
+      "createdAt": 1759565660710
+    },
+    {
       "id": "fe7a25cf-a3be-4010-9eee-31024b235d42",
       "name": "TestField",
       "type": "QUANTITY",
