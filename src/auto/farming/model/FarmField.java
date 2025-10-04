@@ -23,6 +23,7 @@ public class FarmField {
     private FieldGrid grid;
     private SubdivisionConfig subdivisionConfig;
     private CropConfig cropConfig;
+    private FieldTileMap tileMap;
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;
@@ -128,6 +129,13 @@ public class FarmField {
     }
     
     /**
+     * @return Tile state map for tracking individual tile states (can be null if not initialized)
+     */
+    public FieldTileMap getTileMap() {
+        return tileMap;
+    }
+    
+    /**
      * @return Grid origin coordinates (can be null if not yet positioned)
      */
     public Coord2d getGridOrigin() {
@@ -203,6 +211,10 @@ public class FarmField {
      */
     public void setGrid(FieldGrid grid) {
         this.grid = grid;
+        // Reinitialize tile map if grid changes
+        if (grid != null) {
+            this.tileMap = new FieldTileMap(this);
+        }
     }
     
     /**
