@@ -76,6 +76,8 @@ public enum Action {
     TOGGLE_GOB_INFO_QUALITY(gui -> GobInfoOpts.toggle(GobInfoOpts.InfoPart.QUALITY)),
     TOGGLE_GOB_INFO_TIMER(gui -> GobInfoOpts.toggle(GobInfoOpts.InfoPart.TIMER)),
     
+    TOGGLE_FARMING_OVERLAY(gui -> auto.farming.ui.overlay.FarmingOverlay.getInstance().toggle(), "Toggle Farming Overlay", "Show/hide farming field boundaries and info"),
+    
     CLEAR_PLAYER_DAMAGE(GobDamageInfo::clearPlayerDamage, "Clear damage from player"),
     CLEAR_ALL_DAMAGE(GobDamageInfo::clearAllDamage, "Clear damage from everyone");
     

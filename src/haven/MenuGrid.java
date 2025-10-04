@@ -914,6 +914,7 @@ public class MenuGrid extends Widget implements KeyBinding.Bindable {
 	makeLocal("paginae/add/info/cheese", Action.TOGGLE_GOB_INFO_CHEESE, () -> GobInfoOpts.enabled(InfoPart.CHEESE_RACK));
 	makeLocal("paginae/add/info/quality", Action.TOGGLE_GOB_INFO_QUALITY, () -> GobInfoOpts.enabled(InfoPart.QUALITY));
 	makeLocal("paginae/add/info/timer", Action.TOGGLE_GOB_INFO_TIMER, () -> GobInfoOpts.enabled(InfoPart.TIMER));
+	makeLocal("paginae/add/farming_overlay", Action.TOGGLE_FARMING_OVERLAY, () -> auto.farming.ui.overlay.FarmingOverlay.getInstance().isEnabled());
 	makeLocal("paginae/add/alchemy", Action.OPEN_ALCHEMY_DB);
 	makeLocal("paginae/add/equip/sword-n-board", Action.EQUIP_SWORD_N_BOARD);
 	makeLocal("paginae/add/equip/bow", Action.EQUIP_BOW);
