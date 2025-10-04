@@ -24,6 +24,7 @@ public class FarmField {
     private SubdivisionConfig subdivisionConfig;
     private CropConfig cropConfig;
     private FieldTileMap tileMap;
+    private StorageConfig storageConfig;
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;
@@ -136,6 +137,13 @@ public class FarmField {
     }
     
     /**
+     * @return Storage configuration for input/output chests (can be null if not configured)
+     */
+    public StorageConfig getStorageConfig() {
+        return storageConfig;
+    }
+    
+    /**
      * @return Grid origin coordinates (can be null if not yet positioned)
      */
     public Coord2d getGridOrigin() {
@@ -233,6 +241,15 @@ public class FarmField {
      */
     public void setCropConfig(CropConfig cropConfig) {
         this.cropConfig = cropConfig;
+    }
+    
+    /**
+     * Sets the storage configuration.
+     * 
+     * @param storageConfig New storage configuration (can be null)
+     */
+    public void setStorageConfig(StorageConfig storageConfig) {
+        this.storageConfig = storageConfig;
     }
     
     /**
