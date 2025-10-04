@@ -110,6 +110,7 @@ public class FieldEditor implements MapView.Grabber {
         this.onCancelled = onCancel;
         
         overlay.clear();
+        grabber.mv = true; // Enable mouse movement tracking
         mapView.grab(grabber);
         
         // Set as active editor
@@ -208,6 +209,7 @@ public class FieldEditor implements MapView.Grabber {
             return false;
         }
         
+        // mc is already in world coordinates from GrabXL (pixels, not tiles)
         Coord2d worldCoord = new Coord2d(mc);
         
         switch (mode) {
@@ -241,6 +243,7 @@ public class FieldEditor implements MapView.Grabber {
             return;
         }
         
+        // mc is already in world coordinates from GrabXL
         Coord2d worldCoord = new Coord2d(mc);
         
         switch (mode) {
@@ -251,13 +254,7 @@ public class FieldEditor implements MapView.Grabber {
                 break;
             case CIRCLE:
                 if (step == 1) {
-                    Coord2d center = EditorOverlay.snapToGrid(worldCoord);
-                    // Calculate radius from center (set in step 0) to current position
-                    // We need to get the center from overlay - for now use distance from click point
-                    double dx = worldCoord.x - (center.x);
-                    double dy = worldCoord.y - (center.y);
-                    double radius = Math.sqrt(dx * dx + dy * dy);
-                    overlay.setRadius(radius);
+                    overlay.setRadiusFromMouse(worldCoord);
                 }
                 break;
             default:

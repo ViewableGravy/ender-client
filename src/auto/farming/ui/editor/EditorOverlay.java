@@ -77,12 +77,19 @@ public class EditorOverlay {
     }
     
     /**
-     * Sets the radius for circle mode preview.
-     * @param radius The radius in world units
+     * Sets the radius for circle mode preview by calculating distance from center.
+     * @param mousePos Current mouse position in world coordinates
      */
-    public void setRadius(double radius) {
+    public void setRadiusFromMouse(Coord2d mousePos) {
+        if (centerPoint == null) {
+            return;
+        }
+        // Calculate distance in world coordinates
+        double dx = mousePos.x - centerPoint.x;
+        double dy = mousePos.y - centerPoint.y;
+        double dist = Math.sqrt(dx * dx + dy * dy);
         // Snap radius to multiples of tile size
-        this.radius = Math.round(radius / TILE_SIZE) * TILE_SIZE;
+        this.radius = Math.round(dist / TILE_SIZE) * TILE_SIZE;
     }
     
     /**
@@ -105,51 +112,78 @@ public class EditorOverlay {
             return;
         }
         
-        // Draw first corner indicator
-        Coord3f sc1_3f = mapView.screenxf(firstCorner);
-        if (sc1_3f != null) {
-            Coord sc1 = new Coord((int)sc1_3f.x, (int)sc1_3f.y);
-            g.chcolor(GRID_SNAP_COLOR);
-            g.frect(sc1.sub((int)GRID_SNAP_SIZE / 2, (int)GRID_SNAP_SIZE / 2), 
-                    new Coord((int)GRID_SNAP_SIZE, (int)GRID_SNAP_SIZE));
-        }
-        
-        // If we have a second corner, draw the preview rectangle
-        if (secondCorner != null) {
-            Coord3f sc1_3f2 = mapView.screenxf(firstCorner);
-            Coord3f sc2_3f = mapView.screenxf(secondCorner);
-            if (sc1_3f2 != null && sc2_3f != null) {
-                Coord sc1 = new Coord((int)sc1_3f2.x, (int)sc1_3f2.y);
-                Coord sc2 = new Coord((int)sc2_3f.x, (int)sc2_3f.y);
-                // Calculate rectangle bounds
-                int minX = Math.min(sc1.x, sc2.x);
-                int minY = Math.min(sc1.y, sc2.y);
-                int width = Math.abs(sc2.x - sc1.x);
-                int height = Math.abs(sc2.y - sc1.y);
+        try {
+            // Get 3D coordinate with terrain height for first corner
+            Coord3f corner3d = mapView.glob.map.getzp(firstCorner);
+            if (corner3d == null) return;
+            
+            // Draw first corner indicator
+            Coord3f sc1_3f = mapView.screenxf(corner3d);
+            if (sc1_3f != null) {
+                Coord sc1 = new Coord((int)sc1_3f.x, (int)sc1_3f.y);
+                g.chcolor(GRID_SNAP_COLOR);
+                g.frect(sc1.sub((int)GRID_SNAP_SIZE / 2, (int)GRID_SNAP_SIZE / 2), 
+                        new Coord((int)GRID_SNAP_SIZE, (int)GRID_SNAP_SIZE));
+            }
+            
+            // If we have a second corner, draw the preview rectangle
+            if (secondCorner != null) {
+                // Get all 4 corners in world space
+                double minX = Math.min(firstCorner.x, secondCorner.x);
+                double minY = Math.min(firstCorner.y, secondCorner.y);
+                double maxX = Math.max(firstCorner.x, secondCorner.x);
+                double maxY = Math.max(firstCorner.y, secondCorner.y);
                 
-                // Draw preview rectangle
-                g.chcolor(PREVIEW_COLOR);
-                g.frect(new Coord(minX, minY), new Coord(width, height));
+                Coord2d topLeft = new Coord2d(minX, minY);
+                Coord2d topRight = new Coord2d(maxX, minY);
+                Coord2d bottomLeft = new Coord2d(minX, maxY);
+                Coord2d bottomRight = new Coord2d(maxX, maxY);
                 
-                // Draw border
+                // Get terrain height for each corner
+                Coord3f tl3d = mapView.glob.map.getzp(topLeft);
+                Coord3f tr3d = mapView.glob.map.getzp(topRight);
+                Coord3f bl3d = mapView.glob.map.getzp(bottomLeft);
+                Coord3f br3d = mapView.glob.map.getzp(bottomRight);
+                
+                if (tl3d == null || tr3d == null || bl3d == null || br3d == null) return;
+                
+                // Convert to screen coordinates
+                Coord3f tlScreen = mapView.screenxf(tl3d);
+                Coord3f trScreen = mapView.screenxf(tr3d);
+                Coord3f blScreen = mapView.screenxf(bl3d);
+                Coord3f brScreen = mapView.screenxf(br3d);
+                
+                if (tlScreen == null || trScreen == null || blScreen == null || brScreen == null) return;
+                
+                Coord tl = new Coord((int)tlScreen.x, (int)tlScreen.y);
+                Coord tr = new Coord((int)trScreen.x, (int)trScreen.y);
+                Coord bl = new Coord((int)blScreen.x, (int)blScreen.y);
+                Coord br = new Coord((int)brScreen.x, (int)brScreen.y);
+                
+                // Draw rectangle as 4 lines (terrain-following)
                 g.chcolor(new Color(255, 255, 0, 255)); // Solid yellow
-                g.rect(new Coord(minX, minY), new Coord(width, height));
+                g.line(tl, tr, 2.5);
+                g.line(tr, br, 2.5);
+                g.line(br, bl, 2.5);
+                g.line(bl, tl, 2.5);
                 
                 // Calculate and display area
                 double worldWidth = Math.abs(secondCorner.x - firstCorner.x);
                 double worldHeight = Math.abs(secondCorner.y - firstCorner.y);
                 int tiles = (int)((worldWidth * worldHeight) / (TILE_SIZE * TILE_SIZE));
                 
-                String areaText = String.format("Area: %d tiles (%dx%d)", 
+                String areaText = String.format("Area: %d tiles (%.0fx%.0f)", 
                     tiles, 
-                    (int)(worldWidth / TILE_SIZE),
-                    (int)(worldHeight / TILE_SIZE));
+                    worldWidth / TILE_SIZE,
+                    worldHeight / TILE_SIZE);
                 
                 Text areaLabel = Text.render(areaText);
                 g.chcolor(Color.WHITE);
-                g.image(areaLabel.tex(), new Coord(minX, minY - 20));
+                g.image(areaLabel.tex(), new Coord(tl.x, tl.y - 20));
                 areaLabel.dispose();
             }
+        } catch (Exception e) {
+            // Ignore rendering errors
         }
         
         g.chcolor();
@@ -165,38 +199,41 @@ public class EditorOverlay {
             return;
         }
         
-        Coord3f center3f = mapView.screenxf(centerPoint);
-        if (center3f == null) {
-            return;
-        }
-        
-        Coord center = new Coord((int)center3f.x, (int)center3f.y);
-        
-        // Draw center indicator
-        g.chcolor(GRID_SNAP_COLOR);
-        g.frect(center.sub((int)GRID_SNAP_SIZE / 2, (int)GRID_SNAP_SIZE / 2), 
-                new Coord((int)GRID_SNAP_SIZE, (int)GRID_SNAP_SIZE));
-        
-        // If we have a radius, draw the preview circle
-        if (radius > 0) {
-            // Convert radius to screen space
-            Coord2d radiusPoint = centerPoint.add(radius, 0);
-            Coord3f radiusScreen3f = mapView.screenxf(radiusPoint);
+        try {
+            // Get 3D coordinate with terrain height for center
+            Coord3f center3d = mapView.glob.map.getzp(centerPoint);
+            if (center3d == null) return;
             
-            if (radiusScreen3f != null) {
-                Coord radiusScreen = new Coord((int)radiusScreen3f.x, (int)radiusScreen3f.y);
-                int screenRadius = (int)center.dist(radiusScreen);
-                
-                // Draw circle as lines between points
+            Coord3f center3f = mapView.screenxf(center3d);
+            if (center3f == null) return;
+            
+            Coord center = new Coord((int)center3f.x, (int)center3f.y);
+            
+            // Draw center indicator
+            g.chcolor(GRID_SNAP_COLOR);
+            g.frect(center.sub((int)GRID_SNAP_SIZE / 2, (int)GRID_SNAP_SIZE / 2), 
+                    new Coord((int)GRID_SNAP_SIZE, (int)GRID_SNAP_SIZE));
+            
+            // If we have a radius, draw the preview circle
+            if (radius > 0) {
+                // Draw circle as lines between points in world space
                 int segments = 64;
                 Coord lastPoint = null;
                 
                 g.chcolor(new Color(255, 255, 0, 255)); // Solid yellow border
                 for (int i = 0; i <= segments; i++) {
                     double angle = (2 * Math.PI * i) / segments;
-                    int x = center.x + (int)(screenRadius * Math.cos(angle));
-                    int y = center.y + (int)(screenRadius * Math.sin(angle));
-                    Coord point = new Coord(x, y);
+                    double worldX = centerPoint.x + radius * Math.cos(angle);
+                    double worldY = centerPoint.y + radius * Math.sin(angle);
+                    
+                    Coord2d worldPoint = new Coord2d(worldX, worldY);
+                    Coord3f point3d = mapView.glob.map.getzp(worldPoint);
+                    if (point3d == null) continue;
+                    
+                    Coord3f pointScreen3f = mapView.screenxf(point3d);
+                    if (pointScreen3f == null) continue;
+                    
+                    Coord point = new Coord((int)pointScreen3f.x, (int)pointScreen3f.y);
                     
                     if (lastPoint != null) {
                         g.line(lastPoint, point, 2.0);
@@ -212,9 +249,11 @@ public class EditorOverlay {
                 
                 Text areaLabel = Text.render(areaText);
                 g.chcolor(Color.WHITE);
-                g.image(areaLabel.tex(), center.sub(areaLabel.sz().x / 2, screenRadius + 20));
+                g.image(areaLabel.tex(), center.sub(areaLabel.sz().x / 2, 20));
                 areaLabel.dispose();
             }
+        } catch (Exception e) {
+            // Ignore rendering errors
         }
         
         g.chcolor();
