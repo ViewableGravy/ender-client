@@ -3,6 +3,7 @@ package auto.farming.ui;
 import haven.*;
 import auto.farming.model.FarmField;
 import auto.farming.FarmingManager;
+import auto.farming.ui.editor.FieldEditor;
 
 import java.awt.Color;
 
@@ -12,6 +13,8 @@ import java.awt.Color;
  */
 public class FieldsTab extends Widget {
     private final FarmingManager manager;
+    private final MapView mapView;
+    private final FieldEditor fieldEditor;
     private final FieldListWidget fieldList;
     private final SearchTextEntry searchBox;
     private final Label statsLabel;
@@ -32,10 +35,14 @@ public class FieldsTab extends Widget {
     
     /**
      * Creates a new fields tab.
+     * @param sz The size of the tab
+     * @param mapView The map view for field editor
      */
-    public FieldsTab(Coord sz) {
+    public FieldsTab(Coord sz, MapView mapView) {
         super(sz);
         this.manager = FarmingManager.getInstance();
+        this.mapView = mapView;
+        this.fieldEditor = new FieldEditor(mapView);
         
         int y = 0;
         int margin = UI.scale(5);
@@ -173,8 +180,86 @@ public class FieldsTab extends Widget {
      * Handles add field button click.
      */
     private void onAddField() {
-        // TODO: Open field editor in create mode (FB-3.3)
-        System.out.println("Add field - to be implemented in FB-3.3");
+        // Show field creation menu
+        if (ui.gui != null) {
+            ui.gui.add(new Window(UI.scale(new Coord(300, 120)), "Add Field") {
+                {
+                    int y = UI.scale(10);
+                    add(new Label("Select field shape:"), UI.scale(new Coord(10, y)));
+                    y += UI.scale(25);
+                    
+                    add(new Button(UI.scale(120), "Rectangle") {
+                        @Override
+                        public void click() {
+                            parent.reqdestroy();
+                            startRectangleEditor();
+                        }
+                    }, UI.scale(new Coord(20, y)));
+                    
+                    add(new Button(UI.scale(120), "Circle") {
+                        @Override
+                        public void click() {
+                            parent.reqdestroy();
+                            startCircleEditor();
+                        }
+                    }, UI.scale(new Coord(150, y)));
+                    
+                    y += UI.scale(35);
+                    add(new Button(UI.scale(100), "Cancel") {
+                        @Override
+                        public void click() {
+                            parent.reqdestroy();
+                        }
+                    }, UI.scale(new Coord(90, y)));
+                    
+                    pack();
+                }
+            }, UI.scale(new Coord(400, 300)));
+        }
+    }
+    
+    /**
+     * Starts the rectangle field editor.
+     */
+    private void startRectangleEditor() {
+        // Hide this window while editing
+        getparent(FarmingConfigWindow.class).hide();
+        
+        fieldEditor.startRectangleMode(
+            field -> {
+                // Field created callback
+                refresh();
+                getparent(FarmingConfigWindow.class).show();
+                System.out.println("Created field: " + field.getName());
+            },
+            () -> {
+                // Cancelled callback
+                getparent(FarmingConfigWindow.class).show();
+                System.out.println("Field creation cancelled");
+            }
+        );
+    }
+    
+    /**
+     * Starts the circle field editor.
+     */
+    private void startCircleEditor() {
+        // Hide this window while editing
+        getparent(FarmingConfigWindow.class).hide();
+        
+        fieldEditor.startCircleMode(
+            field -> {
+                // Field created callback
+                refresh();
+                getparent(FarmingConfigWindow.class).show();
+                System.out.println("Created field: " + field.getName());
+            },
+            () -> {
+                // Cancelled callback
+                getparent(FarmingConfigWindow.class).show();
+                System.out.println("Field creation cancelled");
+            }
+        );
     }
     
     /**
@@ -183,8 +268,23 @@ public class FieldsTab extends Widget {
     private void onEditField() {
         FarmField selected = fieldList.getSelectedField();
         if (selected != null) {
-            // TODO: Open field editor in edit mode (FB-3.3)
-            System.out.println("Edit field: " + selected.getName());
+            // Hide this window while editing
+            getparent(FarmingConfigWindow.class).hide();
+            
+            fieldEditor.startEditMode(
+                selected,
+                field -> {
+                    // Field edited callback
+                    refresh();
+                    getparent(FarmingConfigWindow.class).show();
+                    System.out.println("Edited field: " + field.getName());
+                },
+                () -> {
+                    // Cancelled callback
+                    getparent(FarmingConfigWindow.class).show();
+                    System.out.println("Field edit cancelled");
+                }
+            );
         }
     }
     

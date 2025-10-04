@@ -12,6 +12,7 @@ public class FarmingConfigWindow extends WindowX {
     private static final String WINDOW_CAP = "Farming Configuration";
     
     private final FarmingManager manager;
+    private final MapView mapView;
     private final Tabs tabs;
     
     // Tab references
@@ -21,10 +22,12 @@ public class FarmingConfigWindow extends WindowX {
     
     /**
      * Creates a new farming configuration window.
+     * @param mapView The map view for field editor
      */
-    public FarmingConfigWindow() {
+    public FarmingConfigWindow(MapView mapView) {
         super(DEFAULT_SIZE, WINDOW_CAP);
         this.manager = FarmingManager.getInstance();
+        this.mapView = mapView;
         
         // Create tabbed interface
         tabs = new Tabs(UI.scale(new Coord(15, 10)), UI.scale(new Coord(570, 700)), this);
@@ -63,7 +66,7 @@ public class FarmingConfigWindow extends WindowX {
      * Initializes the Fields tab content.
      */
     private void initFieldsTab() {
-        fieldsTab.add(new FieldsTab(tabs.sz), Coord.z);
+        fieldsTab.add(new FieldsTab(tabs.sz, mapView), Coord.z);
     }
     
     /**

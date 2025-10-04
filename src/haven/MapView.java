@@ -1883,6 +1883,9 @@ public class MapView extends PView implements DTarget, Console.Directory, Widget
 	    // Farming overlay rendering
 	    auto.farming.ui.overlay.FarmingOverlay.getInstance().render(g, this);
 	    
+	    // Field editor rendering (if active)
+	    auto.farming.ui.editor.FieldEditor.renderActive(g);
+	    
 	    glob.map.reqarea(cc.floor(tilesz).sub(MCache.cutsz.mul(view + 1)),
 			     cc.floor(tilesz).add(MCache.cutsz.mul(view + 1)));
 	    
@@ -2419,6 +2422,13 @@ public class MapView extends PView implements DTarget, Console.Directory, Widget
     }
 
     public boolean keydown(KeyDownEvent ev) {
+	// Field editor ESC handling
+	if (ev.code == KeyEvent.VK_ESCAPE) {
+	    if (auto.farming.ui.editor.FieldEditor.cancelActive()) {
+		return true;
+	    }
+	}
+	
 	Loader.Future<Plob> placing_l = this.placing;
 	if((placing_l != null) && placing_l.done()) {
 	    Plob placing = placing_l.get();

@@ -2450,8 +2450,8 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
                     return;
                 }
                 
-                // Create new window
-                auto.farming.ui.FarmingConfigWindow wnd = new auto.farming.ui.FarmingConfigWindow();
+                // Create new window (pass MapView reference)
+                auto.farming.ui.FarmingConfigWindow wnd = new auto.farming.ui.FarmingConfigWindow(map);
                 add(wnd, UI.scale(new Coord(100, 100)));
                 cons.out.println("Opened farming configuration window");
             }
