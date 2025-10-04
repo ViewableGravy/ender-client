@@ -1,5 +1,6 @@
 package auto.farming.model;
 
+import auto.farming.model.subdivision.SubdivisionConfig;
 import haven.Coord2d;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class FarmField {
     private FieldType type;
     private FieldShape shape;
     private FieldGrid grid;
+    private SubdivisionConfig subdivisionConfig;
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;
@@ -111,6 +113,13 @@ public class FarmField {
     }
     
     /**
+     * @return Subdivision configuration (can be null if no subdivision)
+     */
+    public SubdivisionConfig getSubdivisionConfig() {
+        return subdivisionConfig;
+    }
+    
+    /**
      * @return Grid origin coordinates (can be null if not yet positioned)
      */
     public Coord2d getGridOrigin() {
@@ -186,6 +195,15 @@ public class FarmField {
      */
     public void setGrid(FieldGrid grid) {
         this.grid = grid;
+    }
+    
+    /**
+     * Sets the subdivision configuration.
+     * 
+     * @param subdivisionConfig New subdivision configuration (can be null)
+     */
+    public void setSubdivisionConfig(SubdivisionConfig subdivisionConfig) {
+        this.subdivisionConfig = subdivisionConfig;
     }
     
     /**
