@@ -18,12 +18,12 @@ public class inormattr extends resattr {
     }
 
     public String format(double val) {
-	double Δ = (1.0 / (1.0 + val)) - 1.0;
-	String bval = (Math.abs(Δ) >= 10) ?
-	    String.format("%s\u00d7", Utils.odformat2(Math.abs(Δ), dec)) :
-	    String.format("%s%%", Utils.odformat2(Math.abs(Δ) * 100, dec));
+	double delta = (1.0 / (1.0 + val)) - 1.0;
+	String bval = (Math.abs(delta) >= 10) ?
+	    String.format("%s\u00d7", Utils.odformat2(Math.abs(delta), dec)) :
+	    String.format("%s%%", Utils.odformat2(Math.abs(delta) * 100, dec));
 	return(String.format("%s{%s%s}",
-			     RichText.Parser.col2a((Δ < 0) ? buff : debuff),
-			     (Δ < 0) ? "-" : "+", bval));
+			     RichText.Parser.col2a((delta < 0) ? buff : debuff),
+			     (delta < 0) ? "-" : "+", bval));
     }
 }

@@ -262,6 +262,85 @@ public class Actions {
 	    .start(gui.ui, true);
     }
     
+    public static void circleWalk(GameUI gui) {
+	// Toggle the state
+	boolean newState = !CFG.BOT_CIRCLE_WALK.get();
+	CFG.BOT_CIRCLE_WALK.set(newState);
+	
+	if(!newState) {
+	    // Turned off - cancel any running bot
+	    Bot.cancelCurrent();
+	    return;
+	}
+	
+	Gob player = gui.map.player();
+	if(player == null) {
+	    gui.error("Cannot find player");
+	    CFG.BOT_CIRCLE_WALK.set(false);
+	    return;
+	}
+	
+	// Get current player position as center
+	Coord2d center = player.rc;
+	
+	// Radius of 2 tiles (1 tile = 11 units)
+	double radius = 22.0;
+	
+	// Create 8 points in a circle
+	int numPoints = 8;
+	List<Coord2d> circlePoints = new ArrayList<>();
+	for(int i = 0; i < numPoints; i++) {
+	    double angle = (2 * Math.PI * i) / numPoints;
+	    double x = center.x + radius * Math.cos(angle);
+	    double y = center.y + radius * Math.sin(angle);
+	    circlePoints.add(new Coord2d(x, y));
+	}
+	
+	// Execute the circular walk - loop continuously while toggle is on
+	Bot.execute((target, bot) -> {
+	    try {
+		while(CFG.BOT_CIRCLE_WALK.get()) {
+		    for(Coord2d point : circlePoints) {
+			bot.checkCancelled();
+			
+			// Check if toggle was turned off
+			if(!CFG.BOT_CIRCLE_WALK.get()) {
+			    return;
+			}
+			
+			// Click to move to the next point
+			Coord pc = point.floor(OCache.posres);
+			gui.map.wdgmsg("click", Coord.z, pc, 1, 0);
+			
+			// Wait for movement to start
+			BotUtil.pause(100);
+			
+			// Wait until we're close to the target point or timeout
+			long timeout = 5000;
+			while(timeout > 0) {
+			    bot.checkCancelled();
+			    
+			    // Check if toggle was turned off
+			    if(!CFG.BOT_CIRCLE_WALK.get()) {
+				return;
+			    }
+			    
+			    Gob p = gui.map.player();
+			    if(p != null && p.rc.dist(point) < 5.0) {
+				break;
+			    }
+			    BotUtil.pause(50);
+			    timeout -= 50;
+			}
+		    }
+		}
+	    } finally {
+		// Always turn off the toggle when bot stops
+		CFG.BOT_CIRCLE_WALK.set(false);
+	    }
+	}).start(gui.ui, true);
+    }
+    
     private static Bot.BotAction fuelWith(GameUI gui, String fuel, int count) {
 	return (target, bot) -> {
 	    Supplier<List<WItem>> inventory = unstacked(INVENTORY(gui));
