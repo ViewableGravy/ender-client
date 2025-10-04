@@ -2438,6 +2438,24 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
                 }
             }
         });
+        
+        cmdmap.put("farmconfig", new Console.Command() {
+            public void run(Console cons, String[] args) {
+                // Check if window already exists
+                for (Widget w : children(auto.farming.ui.FarmingConfigWindow.class)) {
+                    auto.farming.ui.FarmingConfigWindow wnd = (auto.farming.ui.FarmingConfigWindow) w;
+                    wnd.show();
+                    wnd.raise();
+                    cons.out.println("Farming configuration window already open");
+                    return;
+                }
+                
+                // Create new window
+                auto.farming.ui.FarmingConfigWindow wnd = new auto.farming.ui.FarmingConfigWindow();
+                add(wnd, UI.scale(new Coord(100, 100)));
+                cons.out.println("Opened farming configuration window");
+            }
+        });
     }
 
     public Map<String, Console.Command> findcmds() {

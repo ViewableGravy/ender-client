@@ -140,6 +140,12 @@ Removes all test fields from the farming manager. Use this to clean up your test
 :farmclear
 ```
 
+### Farming Configuration Window
+```
+:farmconfig
+```
+Opens the farming configuration window where you can manage fields, crop settings, and storage.
+
 ## Advanced: Adding Custom Commands
 
 To add your own console commands, edit `GameUI.java` in the `cmdmap` initialization block:
