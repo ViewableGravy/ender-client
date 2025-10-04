@@ -22,6 +22,7 @@ public class FarmField {
     private FieldShape shape;
     private FieldGrid grid;
     private SubdivisionConfig subdivisionConfig;
+    private CropConfig cropConfig;
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;
@@ -120,6 +121,13 @@ public class FarmField {
     }
     
     /**
+     * @return Crop configuration (can be null if not yet configured)
+     */
+    public CropConfig getCropConfig() {
+        return cropConfig;
+    }
+    
+    /**
      * @return Grid origin coordinates (can be null if not yet positioned)
      */
     public Coord2d getGridOrigin() {
@@ -204,6 +212,15 @@ public class FarmField {
      */
     public void setSubdivisionConfig(SubdivisionConfig subdivisionConfig) {
         this.subdivisionConfig = subdivisionConfig;
+    }
+    
+    /**
+     * Sets the crop configuration.
+     * 
+     * @param cropConfig New crop configuration (can be null)
+     */
+    public void setCropConfig(CropConfig cropConfig) {
+        this.cropConfig = cropConfig;
     }
     
     /**
