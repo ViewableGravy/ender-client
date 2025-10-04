@@ -19,6 +19,7 @@ public class FarmField {
     private String name;
     private FieldType type;
     private FieldShape shape;
+    private FieldGrid grid;
     private Coord2d gridOrigin;
     private String cropType; // Resource name e.g., "gfx/terobjs/plants/wheat"
     private boolean enabled;
@@ -103,6 +104,13 @@ public class FarmField {
     }
     
     /**
+     * @return Field grid boundaries (can be null if not yet defined)
+     */
+    public FieldGrid getGrid() {
+        return grid;
+    }
+    
+    /**
      * @return Grid origin coordinates (can be null if not yet positioned)
      */
     public Coord2d getGridOrigin() {
@@ -169,6 +177,15 @@ public class FarmField {
             throw new NullPointerException("Field shape cannot be null");
         }
         this.shape = shape;
+    }
+    
+    /**
+     * Sets the field grid boundaries.
+     * 
+     * @param grid New field grid (can be null)
+     */
+    public void setGrid(FieldGrid grid) {
+        this.grid = grid;
     }
     
     /**
