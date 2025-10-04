@@ -124,73 +124,108 @@ public class FarmingOverlay {
         Coord2d bottomLeft = new Coord2d(minX, maxY);
         Coord2d bottomRight = new Coord2d(maxX, maxY);
         
-        // Convert all corners to screen space
-        Coord3f tlScreen = mapView.screenxf(topLeft);
-        Coord3f trScreen = mapView.screenxf(topRight);
-        Coord3f blScreen = mapView.screenxf(bottomLeft);
-        Coord3f brScreen = mapView.screenxf(bottomRight);
-        
-        if (tlScreen == null || trScreen == null || blScreen == null || brScreen == null) {
-            return; // Map not loaded yet
+        // Get terrain height for each corner and convert to 3D coordinates
+        try {
+            Coord3f tl3d = mapView.glob.map.getzp(topLeft);
+            Coord3f tr3d = mapView.glob.map.getzp(topRight);
+            Coord3f bl3d = mapView.glob.map.getzp(bottomLeft);
+            Coord3f br3d = mapView.glob.map.getzp(bottomRight);
+            
+            // Convert all corners to screen space
+            Coord3f tlScreen = mapView.screenxf(tl3d);
+            Coord3f trScreen = mapView.screenxf(tr3d);
+            Coord3f blScreen = mapView.screenxf(bl3d);
+            Coord3f brScreen = mapView.screenxf(br3d);
+            
+            if (tlScreen == null || trScreen == null || blScreen == null || brScreen == null) {
+                return; // Map not loaded yet
+            }
+            
+            Coord tl = tlScreen.round2();
+            Coord tr = trScreen.round2();
+            Coord bl = blScreen.round2();
+            Coord br = brScreen.round2();
+            
+            // Draw rectangle as 4 lines connecting the corners
+            g.chcolor(color);
+            g.line(tl, tr, 2); // Top edge
+            g.line(tr, br, 2); // Right edge
+            g.line(br, bl, 2); // Bottom edge
+            g.line(bl, tl, 2); // Left edge
+            
+            // Draw field name at center with terrain height
+            Coord2d centerGrid = grid.getCenter();
+            Coord2d centerWorld = new Coord2d(centerGrid.x * 11.0, centerGrid.y * 11.0);
+            Coord3f center3d = mapView.glob.map.getzp(centerWorld);
+            Coord3f centerScreen = mapView.screenxf(center3d);
+            
+            if (centerScreen != null) {
+                g.chcolor(Color.WHITE);
+                g.atext(field.getName(), centerScreen.round2(), 0.5, 0.5);
+            }
+            
+            g.chcolor();
+        } catch (Loading e) {
+            // Map data not loaded yet
         }
-        
-        Coord tl = tlScreen.round2();
-        Coord tr = trScreen.round2();
-        Coord bl = blScreen.round2();
-        Coord br = brScreen.round2();
-        
-        // Draw rectangle as 4 lines connecting the corners
-        g.chcolor(color);
-        g.line(tl, tr, 2); // Top edge
-        g.line(tr, br, 2); // Right edge
-        g.line(br, bl, 2); // Bottom edge
-        g.line(bl, tl, 2); // Left edge
-        
-        // Draw field name at center
-        g.chcolor(Color.WHITE);
-        Coord center = tl.add(br.sub(tl).div(2));
-        g.atext(field.getName(), center, 0.5, 0.5);
-        
-        g.chcolor();
     }
     
     /**
      * Renders a circular field.
+     * Draws the circle as a polygon with world-space points projected to screen space.
      */
     private void renderCircleField(GOut g, MapView mapView, FieldGrid grid, Color color, FarmField field) {
         Coord2d centerGrid = grid.getCenter();
         double radius = grid.getRadius();
         
         // Convert to world coordinates
-        Coord2d centerWorld = new Coord2d(centerGrid.x * 11.0, centerGrid.y * 11.0);
-        Coord3f centerScreen3f = mapView.screenxf(centerWorld);
+        double centerWorldX = centerGrid.x * 11.0;
+        double centerWorldY = centerGrid.y * 11.0;
+        double radiusWorld = radius * 11.0;
         
-        if (centerScreen3f == null) {
-            return; // Map not loaded yet
+        // Draw circle as a polygon with multiple points
+        int segments = 32; // Number of line segments to approximate the circle
+        Coord[] points = new Coord[segments];
+        
+        try {
+            for (int i = 0; i < segments; i++) {
+                double angle = (2 * Math.PI * i) / segments;
+                double x = centerWorldX + radiusWorld * Math.cos(angle);
+                double y = centerWorldY + radiusWorld * Math.sin(angle);
+                
+                // Get terrain height at this point
+                Coord2d worldPoint = new Coord2d(x, y);
+                Coord3f point3d = mapView.glob.map.getzp(worldPoint);
+                Coord3f screenPoint = mapView.screenxf(point3d);
+                
+                if (screenPoint == null) {
+                    return; // Map not loaded yet
+                }
+                
+                points[i] = screenPoint.round2();
+            }
+            
+            // Draw lines connecting all points
+            g.chcolor(color);
+            for (int i = 0; i < segments; i++) {
+                int next = (i + 1) % segments;
+                g.line(points[i], points[next], 2);
+            }
+            
+            // Draw field name at center
+            Coord2d centerWorld = new Coord2d(centerWorldX, centerWorldY);
+            Coord3f center3d = mapView.glob.map.getzp(centerWorld);
+            Coord3f centerScreen3f = mapView.screenxf(center3d);
+            
+            if (centerScreen3f != null) {
+                g.chcolor(Color.WHITE);
+                g.atext(field.getName(), centerScreen3f.round2(), 0.5, 0.5);
+            }
+            
+            g.chcolor();
+        } catch (Loading e) {
+            // Map data not loaded yet
         }
-        
-        Coord centerScreen = centerScreen3f.round2();
-        
-        // Calculate screen radius (approximate - use distance from center to edge point)
-        Coord2d radiusPoint = new Coord2d((centerGrid.x + radius) * 11.0, centerGrid.y * 11.0);
-        Coord3f radiusScreen3f = mapView.screenxf(radiusPoint);
-        
-        if (radiusScreen3f == null) {
-            return;
-        }
-        
-        Coord radiusScreen = radiusScreen3f.round2();
-        int screenRadius = radiusScreen.sub(centerScreen).x;
-        
-        // Draw circle
-        g.chcolor(color);
-        g.fellipse(centerScreen, new Coord(Math.abs(screenRadius), Math.abs(screenRadius)));
-        
-        // Draw field name
-        g.chcolor(Color.WHITE);
-        g.atext(field.getName(), centerScreen, 0.5, 0.5);
-        
-        g.chcolor();
     }
     
     /**

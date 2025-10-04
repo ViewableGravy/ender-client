@@ -110,6 +110,27 @@
       "cropType": "gfx/terobjs/plants/wheat",
       "enabled": true,
       "createdAt": 1759560232346
+    },
+    {
+      "id": "8fd9ebd5-ca02-4879-9f2a-6c27db6bd3ea",
+      "name": "example-circle",
+      "type": "QUALITY",
+      "shape": "CIRCLE",
+      "grid": {
+        "shape": "CIRCLE",
+        "center": {
+          "x": -925.0,
+          "y": -909.0
+        },
+        "radius": 50.0
+      },
+      "gridOrigin": {
+        "x": -925.0,
+        "y": -909.0
+      },
+      "cropType": "gfx/terobjs/plants/flax",
+      "enabled": true,
+      "createdAt": 1759561850586
     }
   ],
   "storage": {},
