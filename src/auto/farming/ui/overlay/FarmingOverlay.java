@@ -851,6 +851,13 @@ public class FarmingOverlay {
     }
     
     /**
+     * Checks if performance metrics are being shown.
+     */
+    public boolean isShowingPerformanceMetrics() {
+        return showPerformanceMetrics;
+    }
+    
+    /**
      * Gets the last render time in nanoseconds.
      */
     public long getLastRenderTimeNanos() {
