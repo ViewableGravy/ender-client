@@ -1879,6 +1879,10 @@ public class MapView extends PView implements DTarget, Console.Directory, Widget
 	    undelay(delayed2, g);
 	    poldraw(g);
 	    partydraw(g);
+	    
+	    // Farming overlay rendering
+	    auto.farming.ui.overlay.FarmingOverlay.getInstance().render(g, this);
+	    
 	    glob.map.reqarea(cc.floor(tilesz).sub(MCache.cutsz.mul(view + 1)),
 			     cc.floor(tilesz).add(MCache.cutsz.mul(view + 1)));
 	    

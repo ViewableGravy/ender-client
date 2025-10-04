@@ -348,6 +348,9 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
 	syslog = chat.add(new ChatUI.Log("System"));
 	opts = add(new OptWnd());
 	opts.hide();
+	
+	// Initialize farming manager
+	auto.farming.FarmingManager.getInstance().initialize();
 	zerg = add(new Zergwnd(), Utils.getprefc("wndc-zerg", UI.scale(new Coord(187, 50))));
 	zerg.hide();
 	questHelper = add(new QuestHelper(this), UI.scale(new Coord(187, 50)));
@@ -376,6 +379,8 @@ public class GameUI extends ConsoleHost implements Console.Directory, UI.Notice.
     public void destroy() {
 	closeWindows();
 	untrackAllMarkers();
+	// Shutdown farming manager
+	auto.farming.FarmingManager.getInstance().shutdown();
 	super.destroy();
 	ui.clearGUI(this);
     }
